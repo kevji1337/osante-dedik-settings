@@ -23,7 +23,7 @@
 
 ## ✅ FIX 1: AllowTcpForwarding (CRITICAL)
 
-**Проблема:** `AllowTcpForwarding no` мог сломать Coolify деплои.
+**Проблема:** `AllowTcpForwarding no` мог сломать Dokploy деплои.
 
 **Файл:** `configs/sshd_config`
 
@@ -42,11 +42,11 @@ AllowTcpForwarding local
 
 **Обоснование:**
 - `local` разрешает туннелирование только с локального хоста
-- Это безопасно и достаточно для Coolify
+- Это безопасно и достаточно для Dokploy
 - `yes` был бы менее безопасным
 
 **Влияние:**
-- ✅ Coolify деплои теперь работают
+- ✅ Dokploy деплои теперь работают
 - ✅ SSH туннелирование доступно
 - ✅ VS Code Remote SSH работает
 - ✅ Безопасность сохранена
@@ -78,7 +78,7 @@ DEFAULT_FORWARD_POLICY="ACCEPT"
 
 **Влияние:**
 - ✅ Docker container-to-container работает
-- ✅ Coolify деплои работают
+- ✅ Dokploy деплои работают
 - ✅ Docker port forwarding работает
 - ✅ Безопасность сохранена (правила контролируют трафик)
 
@@ -191,7 +191,7 @@ local paths_to_backup=(
 
 **Влияние:**
 - ✅ Docker volumes backup'ятся
-- ✅ Coolify данные backup'ятся
+- ✅ Dokploy данные backup'ятся
 - ✅ Application uploads не потеряются
 
 ---

@@ -4,7 +4,7 @@ OS:
 Ubuntu 24.04 LTS
 
 Deployment:
-Coolify
+Dokploy
 
 Services run in:
 Docker containers
@@ -56,7 +56,7 @@ Requirements:
 - docker/container metrics
 - alerts in Telegram
 
-Environment setup in Coolify:
+Environment setup in Dokploy:
 
 production
 staging

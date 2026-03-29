@@ -1,6 +1,6 @@
 # Server Hardening & Infrastructure Setup
 
-Production-ready server hardening and infrastructure configuration for Ubuntu 24.04 LTS with Docker, Coolify, Caddy, and Cloudflare.
+Production-ready server hardening and infrastructure configuration for Ubuntu 24.04 LTS with Docker, Dokploy, Caddy, and Cloudflare.
 
 ## 🔒 Security Status
 
@@ -37,7 +37,7 @@ cd /opt/server-hardening
 ./scripts/05-sysctl-hardening.sh
 ./scripts/06-filesystem-security.sh
 ./scripts/07-logging-setup.sh
-./scripts/10-docker-security.sh --no-restart  # Before Coolify!
+./scripts/10-docker-security.sh --no-restart  # Before Dokploy!
 ./scripts/08-monitoring-setup.sh
 ./scripts/09-backup-setup.sh
 
@@ -131,7 +131,7 @@ This project provides a complete, production-ready server hardening setup with:
         │    ┌──────────────────────────────────────────┐
         │    │           Docker Environment              │
         │    │  ┌──────────┐  ┌──────────┐  ┌────────┐ │
-        │    │  │  Caddy   │  │ Coolify  │  │  App   │ │
+        │    │  │  Caddy   │  │ Dokploy  │  │  App   │ │
         │    │  │  Proxy   │  │  Deploy  │  │  API   │ │
         │    │  └──────────┘  └──────────┘  └────────┘ │
         │    │  ┌──────────┐  ┌──────────┐  ┌────────┐ │
@@ -559,6 +559,6 @@ For issues and questions:
 
 **Last Updated:** 2026-03-16  
 **Ubuntu Version:** 24.04 LTS  
-**Tested With:** Docker, Coolify, Caddy, Cloudflare
+**Tested With:** Docker, Dokploy, Caddy, Cloudflare
 
 **Remember:** Security is a process, not a product. Stay vigilant! 🔒

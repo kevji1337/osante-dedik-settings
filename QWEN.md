@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Production-ready server hardening and infrastructure setup for **Osante** - a commercial web application deployed on Ubuntu 24.04 LTS using Coolify as the deployment platform.
+Production-ready server hardening and infrastructure setup for **Osante** - a commercial web application deployed on Ubuntu 24.04 LTS using Dokploy as the deployment platform.
 
 ### Architecture Summary
 
@@ -15,7 +15,7 @@ Internet → Cloudflare → Ubuntu Server → Caddy Reverse Proxy → Docker Con
 
 **Tech Stack:**
 - **OS:** Ubuntu 24.04 LTS
-- **Deployment Platform:** Coolify
+- **Deployment Platform:** Dokploy
 - **Container Runtime:** Docker
 - **Reverse Proxy:** Caddy (with Cloudflare integration)
 - **Database:** PostgreSQL (Docker container)

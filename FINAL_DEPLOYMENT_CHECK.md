@@ -16,7 +16,7 @@
 │  ✅ Configuration Verified: 10/10                              │
 │  ✅ Security Verified: 10/10                                   │
 │  ✅ Docker Compatibility: PASS                                 │
-│  ✅ Coolify Compatibility: PASS                                │
+│  ✅ Dokploy Compatibility: PASS                                │
 │                                                                │
 │  СТАТУС: ✅ ГОТОВО ДЛЯ PRODUCTION DEPLOYMENT                   │
 └────────────────────────────────────────────────────────────────┘
@@ -180,9 +180,9 @@ grafana:
 | PostgreSQL | backup-postgresql.sh | ✅ Included |
 | Server configs | backup-configs.sh | ✅ Included |
 | Caddy config | backup-configs.sh | ✅ Included |
-| Application uploads | backup-configs.sh | ✅ Included (Docker volumes) |
+| Application uploads | backup-configs.sh | ✅ Included |
 | Docker volumes | backup-configs.sh | ✅ Included |
-| Coolify data | backup-configs.sh | ✅ Included (if installed) |
+| Dokploy data | backup-configs.sh | ✅ Included (if installed) |
 
 ### 5.2 Backup Scripts
 
@@ -223,7 +223,7 @@ grafana:
 | log-driver | json-file | json-file | ✅ PASS |
 | no-new-privileges | true | true | ✅ PASS |
 
-### 6.2 Coolify Compatibility
+### 6.2 Dokploy Compatibility
 
 | Check | Status |
 |-------|--------|
@@ -264,7 +264,7 @@ grafana:
 | SSH lockout | ✅ MITIGATED | SSH key check before restart |
 | Network break | ✅ MITIGATED | Docker rules in before.rules |
 | Docker break | ✅ MITIGATED | FORWARD_POLICY=ACCEPT |
-| Coolify break | ✅ MITIGATED | AllowTcpForwarding=local |
+| Dokploy break | ✅ MITIGATED | AllowTcpForwarding=local |
 
 ### 8.2 Execution Order Test
 
@@ -377,7 +377,7 @@ ufw status verbose
 # STEP 5: Docker Security (10 minutes) ⚠️
 # =============================================================================
 
-# RUN BEFORE COOLIFY INSTALLATION
+# RUN BEFORE DOKPLOY INSTALLATION
 ./scripts/10-docker-security.sh --no-restart
 systemctl restart docker
 
@@ -418,10 +418,10 @@ restic init
 ./scripts/security-report.sh
 
 # =============================================================================
-# STEP 9: Install Coolify (if not installed)
+# STEP 9: Install Dokploy (if not installed)
 # =============================================================================
 
-curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+curl -sSL https://dokploy.com/install.sh | bash
 
 # =============================================================================
 # STEP 10: Post-Deployment Checks
