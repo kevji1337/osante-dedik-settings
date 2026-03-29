@@ -61,6 +61,27 @@ This project provides a complete, production-ready server hardening setup with:
 - **Docker Security** - Container isolation, userland-proxy enabled
 - **Monitoring** - Prometheus, Node Exporter, Alertmanager + Telegram (localhost only)
 - **Backups** - Restic with Cloudflare R2 storage
+- **Cloudflare Tunnel** - Secure tunnel without opening ports
+
+## 🚇 Cloudflare Tunnel
+
+**NEW:** Secure access without opening ports!
+
+```bash
+# Install Cloudflare Tunnel
+./scripts/11-cloudflare-tunnel.sh
+
+# Enter token from Cloudflare Dashboard
+# Configure routes in Zero Trust → Networks → Tunnels
+```
+
+**Benefits:**
+- ✅ No open ports (80/443 not required)
+- ✅ Server IP hidden
+- ✅ DDoS protection (L3/L4)
+- ✅ Works behind NAT
+
+**Documentation:** [docs/CLOUDFLARE_TUNNEL.md](docs/CLOUDFLARE_TUNNEL.md)
 
 ## 🛡️ Cloudflare Origin Protection
 

@@ -1,0 +1,39 @@
+# =============================================================================
+# Docker Compose для Cloudflare Tunnel
+# Описание: Cloudflared туннель для безопасного доступа к серверу
+# Использование: docker-compose up -d (после настройки токена)
+# =============================================================================
+
+version: '3.8'
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-tunnel
+    restart: unless-stopped
+    # Token будет добавлен скриптом установки
+    # command: tunnel --no-autoupdate run --token YOUR_TOKEN_HERE
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - cloudflared
+    volumes:
+      - cloudflared-config:/etc/cloudflared
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "cloudflared", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cloudflared:
+    driver: bridge
+
+volumes:
+  cloudflared-config:
+    driver: local
