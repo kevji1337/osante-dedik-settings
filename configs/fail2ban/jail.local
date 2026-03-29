@@ -1,0 +1,85 @@
+# =============================================================================
+# Fail2ban Jail Configuration - Production Server
+# Описание: Конфигурация Fail2ban для защиты SSH и других служб
+# =============================================================================
+
+[DEFAULT]
+# Действие по умолчанию - бан через iptables
+banaction = ufw
+banaction_allports = ufw-allports
+
+# Email уведомления (опционально, настроить SMTP)
+# destemail = admin@example.com
+# sender = fail2ban@example.com
+# mta = sendmail
+# action = %(action_mwl)s
+
+# Время бана (1 час)
+bantime = 3600
+
+# Время для поиска неудачных попыток (10 минут)
+findtime = 600
+
+# Максимальное количество попыток до бана
+maxretry = 5
+
+# Игнорируемые IP адреса (локальные, доверенные)
+ignoreip = 127.0.0.1/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+
+# Логирование
+loglevel = INFO
+logtarget = /var/log/fail2ban.log
+
+# Socket для fail2ban-client
+socket = /var/run/fail2ban/fail2ban.sock
+
+# Pid file
+pidfile = /var/run/fail2ban/fail2ban.pid
+
+# =============================================================================
+# SSH Jail
+# =============================================================================
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 5
+bantime = 3600
+findtime = 600
+
+# Более строгие настройки для рецидивистов
+[sshd-recidive]
+enabled = true
+filter = sshd-recidive
+logpath = /var/log/fail2ban.log
+banaction = ufw
+bantime = 86400  # 24 часа
+findtime = 86400
+maxretry = 3
+
+# =============================================================================
+# Docker/Caddy Protection (опционально)
+# =============================================================================
+# Если Caddy пишет логи доступа, можно добавить защиту от сканеров
+
+[caddy-access]
+enabled = false
+filter = caddy
+logpath = /opt/osante/logs/caddy/access.log
+maxretry = 100
+bantime = 3600
+findtime = 300
+port = 80,443
+
+# =============================================================================
+# PostgreSQL (если логи доступны)
+# =============================================================================
+[postgresql]
+enabled = false
+filter = postgresql
+logpath = /var/log/postgresql/postgresql-*.log
+maxretry = 5
+bantime = 3600
+findtime = 600
+port = 5432

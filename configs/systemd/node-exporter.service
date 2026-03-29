@@ -1,0 +1,39 @@
+[Unit]
+Description=Node Exporter
+Documentation=https://prometheus.io/docs/guides/node-exporter/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+
+ExecStart=/opt/monitoring/node_exporter/node_exporter \
+    --path.rootfs=/host \
+    --path.procfs=/host/proc \
+    --path.sysfs=/host/sys \
+    --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/) \
+    --collector.filesystem.fs-types-exclude=^(sys|proc|auto|cgroup|devpts|ns|aufs|overlay|tmpfs|shm)$$ \
+    --collector.systemd \
+    --collector.docker
+
+# Перезапуск при падении
+Restart=always
+RestartSec=5
+
+# Ограничения ресурсов
+LimitNOFILE=65536
+
+# Безопасность
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=node-exporter
+
+[Install]
+WantedBy=multi-user.target

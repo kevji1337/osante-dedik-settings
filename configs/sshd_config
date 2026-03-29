@@ -1,0 +1,115 @@
+# =============================================================================
+# SSH Server Configuration - Hardened for Production
+# Описание: Безопасная конфигурация SSH для Ubuntu 24.04 LTS
+# =============================================================================
+
+# --- Аутентификация ---
+# Отключить вход от root
+PermitRootLogin no
+
+# Разрешить только аутентификацию по ключам
+PasswordAuthentication no
+PubkeyAuthentication yes
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+
+# Отключить другие методы аутентификации
+KerberosAuthentication no
+GSSAPIAuthentication no
+HostbasedAuthentication no
+IgnoreRhosts yes
+
+# --- Лимиты и таймауты ---
+# Максимальное количество попыток аутентификации
+MaxAuthTries 3
+
+# Время на аутентификацию (секунды)
+LoginGraceTime 60
+
+# Интервал проверки активности клиента (секунды)
+ClientAliveInterval 300
+
+# Максимальное количество пропущенных keepalive
+ClientAliveCountMax 2
+
+# --- Сетевые настройки ---
+# Порт SSH (можно изменить на нестандартный)
+Port 22
+
+# Адреса для прослушивания
+ListenAddress 0.0.0.0
+
+# Протокол
+Protocol 2
+
+# --- Безопасность ---
+# Отключить X11 Forwarding
+X11Forwarding no
+
+# TCP Forwarding — разрешить локальное для Coolify совместимости
+# CRITICAL FIX: local разрешает туннелирование только с локального хоста
+# Это безопасно и достаточно для Coolify деплоев
+AllowTcpForwarding local
+
+# Отключить Agent Forwarding (не нужен для Coolify)
+AllowAgentForwarding no
+
+# Отключить Tunnel
+PermitTunnel no
+
+# Запретить пересылку портов для root
+PermitOpen none
+
+# --- Логирование ---
+# Уровень логирования
+LogLevel VERBOSE
+
+# --- Баннеры и сообщения ---
+# Баннер при подключении
+Banner /etc/ssh/banner
+
+# --- Криптография ---
+# Безопасные алгоритмы обмена ключами
+KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
+
+# Безопасные алгоритмы шифрования
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+
+# Безопасные MAC алгоритмы
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
+
+# --- Ограничения пользователей ---
+# Разрешить только определённых пользователей (раскомментировать и указать пользователей)
+# AllowUsers admin deploy
+
+# Разрешить только определённые группы
+# AllowGroups sudo ssh-users
+
+# --- PAM ---
+UsePAM yes
+
+# --- Окружение ---
+# Не принимать переменные окружения от клиента
+PermitUserEnvironment no
+
+# --- Сжатие ---
+Compression delayed
+
+# --- Max Startups ---
+# MEDIUM RISK FIX: Уменьшено количество одновременных подключений
+# Формат: start:rate:full
+# start=5: начинать отклонять после 5 неаутентифицированных подключений
+# rate=20: отклонять 20% новых подключений
+# full=30: отклонять все подключения после 30
+MaxStartups 5:20:30
+
+# --- Max Sessions ---
+# Максимальное количество сессий на подключение
+MaxSessions 4
+
+# --- Subsystem ---
+Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO
+
+# --- Принудительные команды (опционально) ---
+# Match User admin
+#     ForceCommand /usr/local/bin/admin-shell

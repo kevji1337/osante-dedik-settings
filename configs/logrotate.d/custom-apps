@@ -1,0 +1,85 @@
+# Logrotate configuration for custom application logs
+# Includes: Caddy, application logs, sudo logs
+
+# Caddy access logs
+/opt/osante/logs/caddy/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+    dateext
+    dateformat -%Y%m%d
+    sharedscripts
+    postrotate
+        # Signal Caddy to reopen logs if needed
+        systemctl reload caddy 2>/dev/null || true
+    endscript
+}
+
+# Sudo logs
+/var/log/sudo.log {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0600 root root
+}
+
+# Sudo IO logs directory
+/var/log/sudo-io/* {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+}
+
+# Fail2ban logs
+/var/log/fail2ban.log {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+}
+
+# Server hardening scripts logs
+/var/log/server-hardening/*.log {
+    monthly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+}
+
+# Backup logs
+/var/log/backup/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+}
+
+# Monitoring logs
+/var/log/monitoring/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+}

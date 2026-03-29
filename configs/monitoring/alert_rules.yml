@@ -1,0 +1,191 @@
+# =============================================================================
+# Prometheus Alert Rules - Production Server
+# Описание: Правила алертов для мониторинга сервера и Docker контейнеров
+# =============================================================================
+
+groups:
+  - name: server-alerts
+    interval: 30s
+    rules:
+      # =============================================================================
+      # CPU Alerts
+      # =============================================================================
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокое использование CPU"
+          description: "Использование CPU > 80% на {{ $labels.instance }} в течение 5 минут"
+          telegram_message: "⚠️ Высокое использование CPU\nСервер: {{ $labels.instance }}\nЗначение: {{ $value }}%\nВремя: {{ $labels.job }}"
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Критическое использование CPU"
+          description: "Использование CPU > 95% на {{ $labels.instance }}"
+          telegram_message: "🔴 КРИТИЧЕСКИ: CPU\nСервер: {{ $labels.instance }}\nЗначение: {{ $value }}%"
+
+      # =============================================================================
+      # Memory Alerts
+      # =============================================================================
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокое использование памяти"
+          description: "Использование памяти > 85% на {{ $labels.instance }}"
+          telegram_message: "⚠️ Высокое использование RAM\nСервер: {{ $labels.instance }}\nЗначение: {{ $value }}%"
+
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Критическое использование памяти"
+          description: "Использование памяти > 95% на {{ $labels.instance }}"
+          telegram_message: "🔴 КРИТИЧЕСКИ: RAM\nСервер: {{ $labels.instance }}\nЗначение: {{ $value }}%"
+
+      - alert: LowAvailableMemory
+        expr: node_memory_MemAvailable_bytes < 536870912  # 512MB
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Мало доступной памяти"
+          description: "Доступно менее 512MB памяти на {{ $labels.instance }}"
+
+      # =============================================================================
+      # Disk Alerts
+      # =============================================================================
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокое использование диска"
+          description: "Использование диска > 80% на {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          telegram_message: "⚠️ Высокое использование диска\nСервер: {{ $labels.instance }}\nТочка: {{ $labels.mountpoint }}\nЗначение: {{ $value }}%"
+
+      - alert: CriticalDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Критическое использование диска"
+          description: "Использование диска > 95% на {{ $labels.instance }}"
+          telegram_message: "🔴 КРИТИЧЕСКИ: Диск заполнен\nСервер: {{ $labels.instance }}\nЗначение: {{ $value }}%"
+
+      - alert: DiskWillFillIn24Hours
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}[6h], 24 * 3600) < 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Диск будет заполнен в течение 24 часов"
+          description: "По прогнозу диск {{ $labels.mountpoint }} будет заполнен в течение 24 часов"
+
+      # =============================================================================
+      # Network Alerts
+      # =============================================================================
+      - alert: HighNetworkReceive
+        expr: rate(node_network_receive_bytes_total{device!~"lo|docker.*|veth.*"}[5m]) > 100000000  # 100MB/s
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокий входящий трафик"
+          description: "Входящий трафик > 100MB/s на {{ $labels.instance }} ({{ $labels.device }})"
+
+      - alert: HighNetworkTransmit
+        expr: rate(node_network_transmit_bytes_total{device!~"lo|docker.*|veth.*"}[5m]) > 100000000  # 100MB/s
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокий исходящий трафик"
+          description: "Исходящий трафик > 100MB/s на {{ $labels.instance }} ({{ $labels.device }})"
+
+      # =============================================================================
+      # System Alerts
+      # =============================================================================
+      - alert: HighLoadAverage
+        expr: node_load15 > (count without(cpu, mode) (node_cpu_seconds_total{mode="idle"})) * 1.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокая нагрузка системы"
+          description: "Load average (15m) превышает количество CPU * 1.5 на {{ $labels.instance }}"
+
+      - alert: SystemUptime
+        expr: node_boot_time_seconds < (time() - 86400)  # Less than 1 day
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "Система недавно перезагружена"
+          description: "{{ $labels.instance }} была перезагружена менее 24 часов назад"
+
+      - alert: ClockSkew
+        expr: abs(node_timex_offset_seconds) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Расхождение времени системы"
+          description: "Расхождение времени > 50ms на {{ $labels.instance }}"
+
+      # =============================================================================
+      # Docker Alerts
+      # =============================================================================
+      - alert: DockerContainerDown
+        expr: up{job="docker"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Docker контейнер недоступен"
+          description: "Контейнер {{ $labels.name }} на {{ $labels.instance }} недоступен"
+          telegram_message: "🔴 Docker контейнер упал\nКонтейнер: {{ $labels.name }}\nСервер: {{ $labels.instance }}"
+
+      - alert: DockerContainerHighMemory
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Docker контейнер использует много памяти"
+          description: "Контейнер {{ $labels.name }} использует > 90% памяти"
+
+      # =============================================================================
+      # Service Alerts
+      # =============================================================================
+      - alert: ServiceDown
+        expr: up{job="node"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Сервис мониторинга недоступен"
+          description: "Node exporter на {{ $labels.instance }} недоступен"
+          telegram_message: "🔴 Сервис мониторинга упал\nСервер: {{ $labels.instance }}"
+
+      - alert: SSHBruteForce
+        expr: increase(fail2ban_banned_total{filter="sshd"}[5m]) > 5
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Возможная SSH брутфорс атака"
+          description: "Более 5 банов SSH за 5 минут на {{ $labels.instance }}"
+          telegram_message: "⚠️ Возможная SSH атака\nСервер: {{ $labels.instance }}\nБанов за 5мин: {{ $value }}"

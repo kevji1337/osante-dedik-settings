@@ -1,0 +1,32 @@
+# =============================================================================
+# UFW Before Rules - Docker Compatibility
+# Описание: Правила для совместимости с Docker networking
+# =============================================================================
+
+# DON'T EDIT THIS FILE - EDIT user.rules INSTEAD
+# This file is for rules that need to be applied before user rules
+
+# Docker bridge network compatibility
+# Allow traffic to/from Docker bridge
+-A ufw-before-input -i docker0 -j ACCEPT
+-A ufw-before-output -o docker0 -j ACCEPT
+
+# Allow established and related connections
+-A ufw-before-input -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A ufw-before-output -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Allow loopback
+-A ufw-before-input -i lo -j ACCEPT
+-A ufw-before-output -o lo -j ACCEPT
+
+# Allow ICMP (ping) with rate limiting
+-A ufw-before-input -p icmp --icmp-type echo-request -m limit --limit 1/s --limit-burst 4 -j ACCEPT
+-A ufw-before-input -p icmp --icmp-type echo-reply -j ACCEPT
+-A ufw-before-input -p icmp --icmp-type destination-unreachable -j ACCEPT
+-A ufw-before-input -p icmp --icmp-type time-exceeded -j ACCEPT
+
+# Drop invalid packets
+-A ufw-before-input -m conntrack --ctstate INVALID -j DROP
+
+# Allow DHCP client (if needed)
+-A ufw-before-input -p udp --dport 67:68 --sport 67:68 -j ACCEPT

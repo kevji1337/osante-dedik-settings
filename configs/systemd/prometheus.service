@@ -1,0 +1,42 @@
+[Unit]
+Description=Prometheus Server
+Documentation=https://prometheus.io/docs/introduction/overview/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+
+ExecStart=/opt/monitoring/prometheus/prometheus \
+    --config.file=/opt/monitoring/prometheus/prometheus.yml \
+    --storage.tsdb.path=/opt/monitoring/prometheus/data \
+    --storage.tsdb.retention.time=15d \
+    --web.console.libraries=/opt/monitoring/prometheus/console_libraries \
+    --web.console.templates=/opt/monitoring/prometheus/consoles \
+    --web.enable-lifecycle \
+    --web.enable-admin-api \
+    --web.listen-address=":9090"
+
+# Перезапуск при падении
+Restart=always
+RestartSec=5
+
+# Ограничения ресурсов
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Безопасность
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/monitoring/prometheus/data
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=prometheus
+
+[Install]
+WantedBy=multi-user.target

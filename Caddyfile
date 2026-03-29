@@ -1,0 +1,79 @@
+{
+    admin off
+    
+    servers {
+        trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+    }
+    
+    log {
+        output file /opt/osante/logs/caddy/access.log {
+            roll_size 10mb
+            roll_keep 5
+            roll_keep_for 720h
+        }
+        format json
+    }
+}
+
+(security_headers) {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';"
+        -Server
+    }
+}
+
+(cf_block) {
+    @not_cloudflare {
+        not header CF-Ray *
+    }
+    respond @not_cloudflare "Forbidden: Must connect via Cloudflare" 403
+}
+
+:80, :443 {
+    respond "Not Found or Access Denied" 403
+}
+
+# -----------------
+# Main Website (Static SPA)
+# -----------------
+www.osanteclient.xyz, osanteclient.xyz {
+    import security_headers
+    import cf_block
+    
+    tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
+    
+    @health {
+        path /healthz /readyz
+    }
+    respond @health 200
+    
+    reverse_proxy osante-web:80 {
+        header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+        header_up X-Forwarded-For "{http.request.header.CF-Connecting-IP}, {http.request.remote}"
+    }
+
+    # 🚀 Standalone Backend API
+    handle /api* {
+        reverse_proxy backend:8000 {
+            header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+            header_up X-Forwarded-For "{http.request.header.CF-Connecting-IP}, {http.request.remote}"
+            header_up Host {http.request.host}
+        }
+    }
+
+    # Static Assets (Website)
+    handle {
+        reverse_proxy osante-web:80 {
+            header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+            header_up X-Forwarded-For "{http.request.header.CF-Connecting-IP}, {http.request.remote}"
+        }
+    }
+
+    encode gzip zstd
+}
+
+# Remove Studio & API standalone blocks if they were Supabase-specific

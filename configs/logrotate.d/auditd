@@ -1,0 +1,29 @@
+# Logrotate configuration for auditd logs
+# Retention: 90 days, compress old logs
+
+/var/log/audit/audit.log {
+    weekly
+    rotate 13
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0600 root root
+    postrotate
+        /sbin/service auditd restart > /dev/null 2>&1 || true
+    endscript
+}
+
+/var/log/audit/*.log {
+    daily
+    rotate 90
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root root
+    sharedscripts
+    postrotate
+        /sbin/service auditd restart > /dev/null 2>&1 || true
+    endscript
+}

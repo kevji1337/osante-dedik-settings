@@ -1,0 +1,134 @@
+# =============================================================================
+# UFW User Rules - Production Server with Cloudflare Protection
+# Описание: Пользовательские правила фаервола для продакшен сервера
+#           с защитой от прямого доступа (только Cloudflare IP)
+# =============================================================================
+
+# Правила для UFW
+# Формат: ACTION PORT/PROTOCOL [from ADDRESS] [to ADDRESS]
+
+# =============================================================================
+# DEFAULT POLICIES
+# =============================================================================
+# По умолчанию: запретить входящие, разрешить исходящие
+# CRITICAL FIX: FORWARD_POLICY=ACCEPT требуется для Docker networking
+# Docker container-to-container трафик контролируется правилами ниже
+DEFAULT_INPUT_POLICY="DROP"
+DEFAULT_OUTPUT_POLICY="ACCEPT"
+DEFAULT_FORWARD_POLICY="ACCEPT"
+
+# =============================================================================
+# ALLOWED PORTS
+# =============================================================================
+
+# SSH (порт 22)
+# Разрешить SSH подключения (для администрирования)
+-A ufw-user-input -p tcp --dport 22 -j ACCEPT
+
+# =============================================================================
+# CLOUDFLARE IP RANGES - HTTP/HTTPS ONLY
+# =============================================================================
+# Разрешить HTTP (80) и HTTPS (443) ТОЛЬКО с IP адресов Cloudflare
+# Это предотвращает прямой доступ к серверу в обход Cloudflare
+#
+# ВАЖНО: Эти правила должны быть ПЕРЕД блокирующими правилами
+# =============================================================================
+
+# --- Cloudflare IPv4 Ranges ---
+# Cloudflare IPv4 ranges - HTTP (80)
+-A ufw-user-input -p tcp -s 173.245.48.0/20 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 103.21.244.0/22 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 103.22.200.0/22 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 103.31.4.0/22 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 141.101.64.0/18 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 108.162.192.0/18 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 190.93.240.0/20 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 188.114.96.0/20 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 197.234.240.0/22 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 198.41.128.0/17 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 162.158.0.0/15 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 104.16.0.0/13 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 104.24.0.0/14 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 172.64.0.0/13 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 131.0.72.0/22 --dport 80 -j ACCEPT
+
+# Cloudflare IPv4 ranges - HTTPS (443)
+-A ufw-user-input -p tcp -s 173.245.48.0/20 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 103.21.244.0/22 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 103.22.200.0/22 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 103.31.4.0/22 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 141.101.64.0/18 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 108.162.192.0/18 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 190.93.240.0/20 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 188.114.96.0/20 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 197.234.240.0/22 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 198.41.128.0/17 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 162.158.0.0/15 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 104.16.0.0/13 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 104.24.0.0/14 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 172.64.0.0/13 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 131.0.72.0/22 --dport 443 -j ACCEPT
+
+# --- Cloudflare IPv6 Ranges ---
+# Cloudflare IPv6 ranges - HTTP (80)
+-A ufw-user-input -p tcp -s 2400:cb00::/32 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 2606:4700::/32 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 2803:f800::/32 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 2405:b500::/32 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 2405:8100::/32 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 2a06:98c0::/29 --dport 80 -j ACCEPT
+-A ufw-user-input -p tcp -s 2c0f:f248::/32 --dport 80 -j ACCEPT
+
+# Cloudflare IPv6 ranges - HTTPS (443)
+-A ufw-user-input -p tcp -s 2400:cb00::/32 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 2606:4700::/32 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 2803:f800::/32 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 2405:b500::/32 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 2405:8100::/32 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 2a06:98c0::/29 --dport 443 -j ACCEPT
+-A ufw-user-input -p tcp -s 2c0f:f248::/32 --dport 443 -j ACCEPT
+
+# =============================================================================
+# BLOCK DIRECT ACCESS (Not from Cloudflare)
+# =============================================================================
+# Эти правила блокируют прямой доступ к портам 80/443
+# Трафик должен идти только через Cloudflare proxy
+# Размещаем ПОСЛЕ правил Cloudflare для правильного приоритета
+
+# Блокировать весь остальной HTTP трафик (прямой доступ запрещён)
+-A ufw-user-input -p tcp --dport 80 -j DROP
+
+# Блокировать весь остальной HTTPS трафик (прямой доступ запрещён)
+-A ufw-user-input -p tcp --dport 443 -j DROP
+
+# =============================================================================
+# ЗАБЛОКИРОВАТЬ PostgreSQL (порт 5432) — ТОЛЬКО внутри Docker сети
+# HIGH PRIORITY: Явный запрет для предотвращения случайного открытия
+# =============================================================================
+-A ufw-user-input -p tcp --dport 5432 -j DROP
+-A ufw-user-input -p udp --dport 5432 -j DROP
+
+# =============================================================================
+# DOCKER NETWORKING
+# =============================================================================
+# Разрешить трафик Docker bridge
+-A ufw-user-input -i docker0 -j ACCEPT
+-A ufw-user-output -o docker0 -j ACCEPT
+
+# Разрешить трафик между Docker контейнерами
+-A ufw-user-forward -i docker0 -o docker0 -j ACCEPT
+
+# =============================================================================
+# RATE LIMITING
+# =============================================================================
+# MEDIUM RISK FIX: Включена защита от брутфорса SSH
+# Работает вместе с Fail2ban для дополнительной защиты
+-A ufw-user-input -p tcp --dport 22 -m conntrack --ctstate NEW -m recent --set
+-A ufw-user-input -p tcp --dport 22 -m conntrack --ctstate NEW -m recent --update --seconds 300 --hitcount 6 -j DROP
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+# Логирование заблокированных подключений (опционально)
+# Включить логирование: ufw logging on
+# Уровень: ufw logging medium

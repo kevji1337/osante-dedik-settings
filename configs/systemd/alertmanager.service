@@ -1,0 +1,41 @@
+[Unit]
+Description=Prometheus Alertmanager
+Documentation=https://prometheus.io/docs/alerting/alertmanager/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=alertmanager
+Group=alertmanager
+
+# CRITICAL FIX: Загрузка Telegram токенов из защищённого EnvironmentFile
+EnvironmentFile=/etc/alertmanager/telegram.env
+
+ExecStart=/opt/monitoring/alertmanager/alertmanager \
+    --config.file=/opt/monitoring/alertmanager/alertmanager.yml \
+    --storage.path=/opt/monitoring/alertmanager/data \
+    --web.listen-address=":9093" \
+    --cluster.listen-address=""
+
+# Перезапуск при падении
+Restart=always
+RestartSec=5
+
+# Ограничения ресурсов
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Безопасность
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/monitoring/alertmanager/data
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=alertmanager
+
+[Install]
+WantedBy=multi-user.target
