@@ -1,0 +1,125 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # =============================================================================
+  # ShellCheck - Bash Script Analysis
+  # =============================================================================
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck
+        run: |
+          echo "🔍 Running ShellCheck on all scripts..."
+          shellcheck --severity=warning scripts/*.sh
+          echo "✅ ShellCheck passed!"
+
+  # =============================================================================
+  # Secret Scan - TruffleHog
+  # =============================================================================
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trufflehog-results
+          path: trufflehog-results.json
+
+  # =============================================================================
+  # Documentation Check
+  # =============================================================================
+  docs-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check README exists
+        run: |
+          if [ ! -f README.md ]; then
+            echo "❌ README.md not found!"
+            exit 1
+          fi
+          echo "✅ README.md found"
+
+      - name: Check LICENSE exists
+        run: |
+          if [ ! -f LICENSE ]; then
+            echo "❌ LICENSE not found!"
+            exit 1
+          fi
+          echo "✅ LICENSE found"
+
+      - name: Check critical docs
+        run: |
+          for file in FINAL_DEPLOYMENT_CHECK.md ARCHITECTURE.md; do
+            if [ ! -f "$file" ]; then
+              echo "❌ $file not found!"
+              exit 1
+            fi
+          done
+          echo "✅ All critical documentation found"
+
+  # =============================================================================
+  # Script Validation
+  # =============================================================================
+  script-validation:
+    name: Script Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check scripts are executable
+        run: |
+          echo "🔍 Checking script permissions..."
+          for script in scripts/*.sh; do
+            if [ ! -x "$script" ]; then
+              echo "⚠️  $script is not executable"
+            else
+              echo "✅ $script is executable"
+            fi
+          done
+
+      - name: Validate bash syntax
+        run: |
+          echo "🔍 Validating bash syntax..."
+          for script in scripts/*.sh; do
+            bash -n "$script" || exit 1
+          done
+          echo "✅ All scripts have valid syntax"
