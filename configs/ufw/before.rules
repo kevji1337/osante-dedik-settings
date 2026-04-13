@@ -3,6 +3,11 @@
 # Описание: Правила для совместимости с Docker networking
 # =============================================================================
 
+*filter
+:ufw-before-input - [0:0]
+:ufw-before-output - [0:0]
+:ufw-before-forward - [0:0]
+
 # DON'T EDIT THIS FILE - EDIT user.rules INSTEAD
 # This file is for rules that need to be applied before user rules
 
@@ -30,3 +35,5 @@
 
 # Allow DHCP client (if needed)
 -A ufw-before-input -p udp --dport 67:68 --sport 67:68 -j ACCEPT
+
+COMMIT

@@ -213,13 +213,8 @@ Defaults    timestamp_timeout=15
 # Требовать tty для sudo
 Defaults    requiretty
 
-# Визуальная обратная связь при вводе пароля
-Defaults    passwd_feedback
-
 # Логирование команд sudo
 Defaults    logfile="/var/log/sudo.log"
-Defaults    log_input, log_output
-Defaults    iolog_dir="/var/log/sudo-io"
 
 # Безопасный PATH
 Defaults    secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"

@@ -1,134 +1,138 @@
-# =============================================================================
-# UFW User Rules - Production Server with Cloudflare Protection
-# Описание: Пользовательские правила фаервола для продакшен сервера
-#           с защитой от прямого доступа (только Cloudflare IP)
-# =============================================================================
+*filter
+:ufw-user-input - [0:0]
+:ufw-user-output - [0:0]
+:ufw-user-forward - [0:0]
+:ufw-before-logging-input - [0:0]
+:ufw-before-logging-output - [0:0]
+:ufw-before-logging-forward - [0:0]
+:ufw-user-logging-input - [0:0]
+:ufw-user-logging-output - [0:0]
+:ufw-user-logging-forward - [0:0]
+:ufw-after-logging-input - [0:0]
+:ufw-after-logging-output - [0:0]
+:ufw-after-logging-forward - [0:0]
+:ufw-logging-deny - [0:0]
+:ufw-logging-allow - [0:0]
+:ufw-user-limit - [0:0]
+:ufw-user-limit-accept - [0:0]
+### RULES ###
 
-# Правила для UFW
-# Формат: ACTION PORT/PROTOCOL [from ADDRESS] [to ADDRESS]
-
-# =============================================================================
-# DEFAULT POLICIES
-# =============================================================================
-# По умолчанию: запретить входящие, разрешить исходящие
-# CRITICAL FIX: FORWARD_POLICY=ACCEPT требуется для Docker networking
-# Docker container-to-container трафик контролируется правилами ниже
-DEFAULT_INPUT_POLICY="DROP"
-DEFAULT_OUTPUT_POLICY="ACCEPT"
-DEFAULT_FORWARD_POLICY="ACCEPT"
-
-# =============================================================================
-# ALLOWED PORTS
-# =============================================================================
-
-# SSH (порт 22)
-# Разрешить SSH подключения (для администрирования)
+### tuple ### allow tcp 22 0.0.0.0/0 any 0.0.0.0/0 in comment=53534820616363657373
 -A ufw-user-input -p tcp --dport 22 -j ACCEPT
 
-# =============================================================================
-# CLOUDFLARE IP RANGES - HTTP/HTTPS ONLY
-# =============================================================================
-# Разрешить HTTP (80) и HTTPS (443) ТОЛЬКО с IP адресов Cloudflare
-# Это предотвращает прямой доступ к серверу в обход Cloudflare
-#
-# ВАЖНО: Эти правила должны быть ПЕРЕД блокирующими правилами
-# =============================================================================
+### tuple ### allow tcp 80 0.0.0.0/0 any 173.245.48.0/20 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 173.245.48.0/20 -j ACCEPT
 
-# --- Cloudflare IPv4 Ranges ---
-# Cloudflare IPv4 ranges - HTTP (80)
--A ufw-user-input -p tcp -s 173.245.48.0/20 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 103.21.244.0/22 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 103.22.200.0/22 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 103.31.4.0/22 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 141.101.64.0/18 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 108.162.192.0/18 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 190.93.240.0/20 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 188.114.96.0/20 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 197.234.240.0/22 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 198.41.128.0/17 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 162.158.0.0/15 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 104.16.0.0/13 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 104.24.0.0/14 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 172.64.0.0/13 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 131.0.72.0/22 --dport 80 -j ACCEPT
+### tuple ### allow tcp 80 0.0.0.0/0 any 103.21.244.0/22 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 103.21.244.0/22 -j ACCEPT
 
-# Cloudflare IPv4 ranges - HTTPS (443)
--A ufw-user-input -p tcp -s 173.245.48.0/20 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 103.21.244.0/22 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 103.22.200.0/22 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 103.31.4.0/22 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 141.101.64.0/18 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 108.162.192.0/18 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 190.93.240.0/20 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 188.114.96.0/20 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 197.234.240.0/22 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 198.41.128.0/17 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 162.158.0.0/15 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 104.16.0.0/13 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 104.24.0.0/14 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 172.64.0.0/13 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 131.0.72.0/22 --dport 443 -j ACCEPT
+### tuple ### allow tcp 80 0.0.0.0/0 any 103.22.200.0/22 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 103.22.200.0/22 -j ACCEPT
 
-# --- Cloudflare IPv6 Ranges ---
-# Cloudflare IPv6 ranges - HTTP (80)
--A ufw-user-input -p tcp -s 2400:cb00::/32 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 2606:4700::/32 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 2803:f800::/32 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 2405:b500::/32 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 2405:8100::/32 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 2a06:98c0::/29 --dport 80 -j ACCEPT
--A ufw-user-input -p tcp -s 2c0f:f248::/32 --dport 80 -j ACCEPT
+### tuple ### allow tcp 80 0.0.0.0/0 any 103.31.4.0/22 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 103.31.4.0/22 -j ACCEPT
 
-# Cloudflare IPv6 ranges - HTTPS (443)
--A ufw-user-input -p tcp -s 2400:cb00::/32 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 2606:4700::/32 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 2803:f800::/32 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 2405:b500::/32 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 2405:8100::/32 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 2a06:98c0::/29 --dport 443 -j ACCEPT
--A ufw-user-input -p tcp -s 2c0f:f248::/32 --dport 443 -j ACCEPT
+### tuple ### allow tcp 80 0.0.0.0/0 any 141.101.64.0/18 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 141.101.64.0/18 -j ACCEPT
 
-# =============================================================================
-# BLOCK DIRECT ACCESS (Not from Cloudflare)
-# =============================================================================
-# Эти правила блокируют прямой доступ к портам 80/443
-# Трафик должен идти только через Cloudflare proxy
-# Размещаем ПОСЛЕ правил Cloudflare для правильного приоритета
+### tuple ### allow tcp 80 0.0.0.0/0 any 108.162.192.0/18 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 108.162.192.0/18 -j ACCEPT
 
-# Блокировать весь остальной HTTP трафик (прямой доступ запрещён)
--A ufw-user-input -p tcp --dport 80 -j DROP
+### tuple ### allow tcp 80 0.0.0.0/0 any 190.93.240.0/20 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 190.93.240.0/20 -j ACCEPT
 
-# Блокировать весь остальной HTTPS трафик (прямой доступ запрещён)
--A ufw-user-input -p tcp --dport 443 -j DROP
+### tuple ### allow tcp 80 0.0.0.0/0 any 188.114.96.0/20 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 188.114.96.0/20 -j ACCEPT
 
-# =============================================================================
-# ЗАБЛОКИРОВАТЬ PostgreSQL (порт 5432) — ТОЛЬКО внутри Docker сети
-# HIGH PRIORITY: Явный запрет для предотвращения случайного открытия
-# =============================================================================
--A ufw-user-input -p tcp --dport 5432 -j DROP
--A ufw-user-input -p udp --dport 5432 -j DROP
+### tuple ### allow tcp 80 0.0.0.0/0 any 197.234.240.0/22 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 197.234.240.0/22 -j ACCEPT
 
-# =============================================================================
-# DOCKER NETWORKING
-# =============================================================================
-# Разрешить трафик Docker bridge
--A ufw-user-input -i docker0 -j ACCEPT
--A ufw-user-output -o docker0 -j ACCEPT
+### tuple ### allow tcp 80 0.0.0.0/0 any 198.41.128.0/17 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 198.41.128.0/17 -j ACCEPT
 
-# Разрешить трафик между Docker контейнерами
--A ufw-user-forward -i docker0 -o docker0 -j ACCEPT
+### tuple ### allow tcp 80 0.0.0.0/0 any 162.158.0.0/15 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 162.158.0.0/15 -j ACCEPT
 
-# =============================================================================
-# RATE LIMITING
-# =============================================================================
-# MEDIUM RISK FIX: Включена защита от брутфорса SSH
-# Работает вместе с Fail2ban для дополнительной защиты
--A ufw-user-input -p tcp --dport 22 -m conntrack --ctstate NEW -m recent --set
--A ufw-user-input -p tcp --dport 22 -m conntrack --ctstate NEW -m recent --update --seconds 300 --hitcount 6 -j DROP
+### tuple ### allow tcp 80 0.0.0.0/0 any 104.16.0.0/13 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 104.16.0.0/13 -j ACCEPT
 
-# =============================================================================
-# LOGGING
-# =============================================================================
-# Логирование заблокированных подключений (опционально)
-# Включить логирование: ufw logging on
-# Уровень: ufw logging medium
+### tuple ### allow tcp 80 0.0.0.0/0 any 104.24.0.0/14 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 104.24.0.0/14 -j ACCEPT
+
+### tuple ### allow tcp 80 0.0.0.0/0 any 172.64.0.0/13 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 172.64.0.0/13 -j ACCEPT
+
+### tuple ### allow tcp 80 0.0.0.0/0 any 131.0.72.0/22 in comment=436c6f7564666c6172652048545450
+-A ufw-user-input -p tcp --dport 80 -s 131.0.72.0/22 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 173.245.48.0/20 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 173.245.48.0/20 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 103.21.244.0/22 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 103.21.244.0/22 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 103.22.200.0/22 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 103.22.200.0/22 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 103.31.4.0/22 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 103.31.4.0/22 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 141.101.64.0/18 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 141.101.64.0/18 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 108.162.192.0/18 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 108.162.192.0/18 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 190.93.240.0/20 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 190.93.240.0/20 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 188.114.96.0/20 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 188.114.96.0/20 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 197.234.240.0/22 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 197.234.240.0/22 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 198.41.128.0/17 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 198.41.128.0/17 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 162.158.0.0/15 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 162.158.0.0/15 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 104.16.0.0/13 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 104.16.0.0/13 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 104.24.0.0/14 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 104.24.0.0/14 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 172.64.0.0/13 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 172.64.0.0/13 -j ACCEPT
+
+### tuple ### allow tcp 443 0.0.0.0/0 any 131.0.72.0/22 in comment=436c6f7564666c617265204854545053
+-A ufw-user-input -p tcp --dport 443 -s 131.0.72.0/22 -j ACCEPT
+
+### tuple ### allow tcp 2222 0.0.0.0/0 any 0.0.0.0/0 in comment=535348202d204e657720506f7274
+-A ufw-user-input -p tcp --dport 2222 -j ACCEPT
+
+### tuple ### allow tcp 3000 0.0.0.0/0 any 0.0.0.0/0 in comment=446f6b706c6f792044617368626f617264
+-A ufw-user-input -p tcp --dport 3000 -j ACCEPT
+
+### END RULES ###
+
+### LOGGING ###
+-A ufw-after-logging-input -j LOG --log-prefix "[UFW BLOCK] " -m limit --limit 3/min --limit-burst 10
+-A ufw-after-logging-output -j LOG --log-prefix "[UFW ALLOW] " -m limit --limit 3/min --limit-burst 10
+-A ufw-after-logging-forward -j LOG --log-prefix "[UFW BLOCK] " -m limit --limit 3/min --limit-burst 10
+-A ufw-logging-deny -m conntrack --ctstate INVALID -j LOG --log-prefix "[UFW AUDIT INVALID] " -m limit --limit 3/min --limit-burst 10
+-A ufw-logging-deny -j LOG --log-prefix "[UFW BLOCK] " -m limit --limit 3/min --limit-burst 10
+-A ufw-logging-allow -j LOG --log-prefix "[UFW ALLOW] " -m limit --limit 3/min --limit-burst 10
+-I ufw-before-logging-input -j LOG --log-prefix "[UFW AUDIT] " -m conntrack --ctstate NEW -m limit --limit 3/min --limit-burst 10
+-I ufw-before-logging-output -j LOG --log-prefix "[UFW AUDIT] " -m conntrack --ctstate NEW -m limit --limit 3/min --limit-burst 10
+-I ufw-before-logging-forward -j LOG --log-prefix "[UFW AUDIT] " -m conntrack --ctstate NEW -m limit --limit 3/min --limit-burst 10
+### END LOGGING ###
+
+### RATE LIMITING ###
+-A ufw-user-limit -m limit --limit 3/minute -j LOG --log-prefix "[UFW LIMIT BLOCK] "
+-A ufw-user-limit -j REJECT
+-A ufw-user-limit-accept -j ACCEPT
+### END RATE LIMITING ###
+COMMIT

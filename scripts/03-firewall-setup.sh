@@ -169,8 +169,8 @@ add_rules() {
         fi
     fi
 
-    # SSH
-    ufw allow 22/tcp comment 'SSH access'
+    # SSH (hardened port 2222)
+    ufw allow 2222/tcp comment 'SSH access - hardened port'
 
     if [[ "${use_cloudflare}" == "false" ]]; then
         # HTTP (для Caddy и TLS) - только если не используем Cloudflare protection

@@ -152,7 +152,7 @@ export AWS_ENDPOINT_URL_S3="https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com"
 export RESTIC_PASSWORD="YOUR_STRONG_PASSWORD"
 
 # PostgreSQL настройки (для backup БД)
-export POSTGRES_CONTAINER="coolify-db"
+export POSTGRES_CONTAINER="<YOUR_DB_CONTAINER>"
 export POSTGRES_HOST="localhost"
 export POSTGRES_USER="postgres"
 export POSTGRES_PASSWORD=""
